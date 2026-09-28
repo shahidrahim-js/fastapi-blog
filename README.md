@@ -46,6 +46,7 @@ Open this URL in your browser:
 You can use the documentation page to test the API.
 
 ## Project Structure
+
 .
 ├── src/
 │   └── fastapi_blog/
@@ -56,6 +57,7 @@ You can use the documentation page to test the API.
 ├── pyproject.toml
 ├── uv.lock
 └── README.md
+
 
 ## Dependencies
 The Project uses:
