@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
@@ -9,6 +10,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI()
+
+# Serve files from the static directory at the /static URL path
+app.mount("/static", StaticFiles(directory=BASE_DIR/"static"), name="static")
 
 templates = Jinja2Templates(directory=BASE_DIR/"templates")
 
