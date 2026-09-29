@@ -34,8 +34,8 @@ posts: list[dict] = [
 ]
 
 # include_in_schema=False exclude this page route from API docs (swagger)
-@app.get("/", include_in_schema=False)
-@app.get("/posts", include_in_schema=False)
+@app.get("/", include_in_schema=False, name="home")
+@app.get("/posts", include_in_schema=False, name="posts")
 def home(request: Request):
   # The dictionary MUST include "request": Request as FastAPI required it.
   return templates.TemplateResponse(request, "home.html", {"posts": posts, "title": "Home"})
