@@ -2,6 +2,10 @@ from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
+# Set BASE_DIR to the absolute directory path where current file (main.py) is located.
+# Path(__file__) returns file relative path eg: src/fastapi_blog/main.py
+# Path(__file__).resolve() returns absolute path eg: /home/user/\fastapi-blog\src\fastapi_blog\main.py
+# Path(__file__).resolve().parent returns parent folder path eg: /home/user/\fastapi-blog\src\fastapi_blog
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI()
@@ -25,7 +29,7 @@ posts: list[dict] = [
   },
 ]
 
-# include_in_schema=False exclude this page rout from API docs (swagger)
+# include_in_schema=False exclude this page route from API docs (swagger)
 @app.get("/", include_in_schema=False)
 @app.get("/posts", include_in_schema=False)
 def home(request: Request):
