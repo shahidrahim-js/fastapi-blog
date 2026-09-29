@@ -30,7 +30,7 @@ posts: list[dict] = [
 @app.get("/posts", include_in_schema=False)
 def home(request: Request):
   # The dictionary MUST include "request": Request as FastAPI required it.
-  return templates.TemplateResponse(request, "home.html", {"posts": posts})
+  return templates.TemplateResponse(request, "home.html", {"posts": posts, "title": "Home"})
 
 @app.get("/api/posts")
 def get_posts():
