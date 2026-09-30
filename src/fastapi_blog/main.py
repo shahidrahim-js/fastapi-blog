@@ -94,7 +94,7 @@ def general_http_exception_handler(request: Request, exception: StarletteHTTPExc
     status_code=exception.status_code
   )
 
-# --- Validation HTTP Exception handling for both API and html template-------
+# --- Validation HTTP Exception handling for both API and html template -------
 @app.exception_handler(RequestValidationError)
 def validation_exception(request: Request, exception: RequestValidationError):
   if request.url.path.startswith("/api"):
