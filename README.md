@@ -23,7 +23,7 @@ Install the project  dependencies:
 Start the FastAPI development server:
 
 ```
-  uv run fastapi dev src/my_fastapi_app/main.py
+  uv run fastapi dev src/fastapi_blog/main.py
 ```
 
 This application will run at 
@@ -72,7 +72,7 @@ After changing the code, restart the development server if needed.
 The --reload option automatically reloads the server when code changes:
 
 ```
-  uv run fastapi dev src/my_fastapi_app/main.py
+  uv run fastapi dev src/fastapi_blog/main.py
 ```
 
 ## License
