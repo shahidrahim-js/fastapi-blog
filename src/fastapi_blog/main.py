@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi_blog.schemas import PostCreate, PostResponse
 
 # Set BASE_DIR to the absolute directory path where current file (main.py) is located.
 # Path(__file__) returns file relative path eg: src/fastapi_blog/main.py
@@ -56,11 +57,11 @@ def post_page(request: Request, post_id: int):
 
 
 # ------- API endpoints
-@app.get("/api/posts")
+@app.get("/api/posts", response_model=list[PostResponse])
 def get_posts():
   return posts
 
-@app.get("/api/posts/{post_id}")
+@app.get("/api/posts/{post_id}", response_model=PostResponse)
 def get_post(post_id: int):
   for post in posts:
     if post.get("id") == post_id:
