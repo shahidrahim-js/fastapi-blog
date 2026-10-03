@@ -24,7 +24,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 class Base(DeclarativeBase):
   pass
 
-# Dependency function to inject the database session into route functions
+# Dependency to inject the database session into api route functions (in main.py)
 def get_db():
   with SessionLocal() as db:
     yield db

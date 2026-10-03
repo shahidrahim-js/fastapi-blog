@@ -26,20 +26,20 @@ class User(Base):
       return f"/media/profile_pics/{self.image_file}"
     return f"{BASE_DIR}/static/profile_pics/default.jpg"
 
-  class Post(Base):
-    __tablename__ = "post"
+class Post(Base):
+  __tablename__ = "posts"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(100), nullable=False)
-    content: Mapped[str] = mapped_column(String(Text), nullable=False)
-    user_id: Mapped[int] = mapped_column(
-      ForeignKey("users.id"),
-      nullable=False,
-      index=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-      DateTime(timezone=True),
-      default=lambda: datetime.now(UTC)
-    )
+  id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+  title: Mapped[str] = mapped_column(String(100), nullable=False)
+  content: Mapped[str] = mapped_column(String(Text), nullable=False)
+  user_id: Mapped[int] = mapped_column(
+    ForeignKey("users.id"),
+    nullable=False,
+    index=True
+  )
+  created_at: Mapped[datetime] = mapped_column(
+    DateTime(timezone=True),
+    default=lambda: datetime.now(UTC)
+  )
 
-    author: Mapped[User] = relationship(back_populates="posts") # Many to one relationship
+  author: Mapped[User] = relationship(back_populates="posts") # Many to one relationship

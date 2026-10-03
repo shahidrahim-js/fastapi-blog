@@ -1,11 +1,21 @@
 from pathlib import Path
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI, Request, HTTPException, status, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi_blog.schemas import PostCreate, PostResponse
+from typing import Annotated
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from . import models
+from .database import Base, engine, get_db
+from .schemas import PostCreate, PostResponse, UserCreate, UserResponse
+
+# It looks at models that inherit from Base and Create database tables (if tabel not exist) when the app starts 
+Base.metadata.create_all(bind=engine)
+
 
 # Set BASE_DIR to the absolute directory path where current file (main.py) is located.
 # Path(__file__) returns file relative path eg: src/fastapi_blog/main.py
@@ -18,74 +28,170 @@ app = FastAPI()
 # Serve files from the static directory at the /static URL path
 app.mount("/static", StaticFiles(directory=BASE_DIR/"static"), name="static")
 
+app.mount("/media", StaticFiles(directory=BASE_DIR/"media"), name="media")
+
 templates = Jinja2Templates(directory=BASE_DIR/"templates")
 
-posts: list[dict] = [
-  {
-    "id": 1,
-    "author": "Raju Rastogi",
-    "title": "Fast API is Awesome",
-    "content": "This framework is really easy to use and super fast.",
-    "created_at": "August 20, 2026"
-  },
-  {
-    "id": 2,
-    "author": "Shahjeb Rose",
-    "title": "Python is Great for Web Development",
-    "content": "Python is a great language for web development, and FastAPI makes it even better.",
-    "created_at": "September 05, 2026"
-  },
-]
-
+# ----- Start HTML Template routes ------------------
 # include_in_schema=False exclude this page route from API docs (swagger)
 @app.get("/", include_in_schema=False, name="home")
 @app.get("/posts", include_in_schema=False, name="posts")
-def home(request: Request):
-  # The dictionary MUST include "request": Request as FastAPI required it.
-  return templates.TemplateResponse(request, "home.html", {"posts": posts, "title": "Home"})
+# The dictionary MUST include "request": Request as FastAPI required it.
+def home(request: Request, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(select(models.Post))
+  posts = result.scalars().all()
+  return templates.TemplateResponse(
+    request,
+    "home.html",
+    {"posts": posts, "title": "Home"}
+  )
 
 @app.get("/posts/{post_id}", include_in_schema=False)
-def post_page(request: Request, post_id: int):
-  for post in posts:
-    if post.get("id") == post_id:
-      title = post["title"][:50]
-      return templates.TemplateResponse(
-        request,
-        "post.html",
-        {"post": post, "title": title})
+def post_page(request: Request, post_id: int, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(select(models.Post).where(models.Post.id == post_id))
+  post = result.scalars().first()
+  if post:
+    title = post.title[:50]
+    return templates.TemplateResponse(
+      request,
+      "post.html",
+      {"post": post, "title": title}
+    )
   raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
+@app.get("/users/{user_id}/posts", include_in_schema=False, name="user_posts")
+def user_posts_page(request: Request, user_id: int, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(select(models.User).where(models.User.id == user_id))
+  user = result.scalars().first()
+  if not user:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail="User not found"
+    )
+  result = db.execute(select(models.Post).where(models.Post.user_id == user.id))
+  posts = result.scalars().all()
+  return templates.TemplateResponse(
+    request,
+    "user_posts.html",
+    {"posts": posts, "user": user, "title": f"{user.username}'s Posts"}
+  )
 
-# ------- API endpoints
+# ------- End HTML Template routes ------------------------
+
+# -------- Start API endpoints ------------------
+@app.post(
+    "/api/users",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED
+)
+# get_db is a dependency injection
+# This tells FastAPI before runing this function call get_db (defined in detabase.py) and pass the result as db parameter
+def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(
+    select(models.User).where(models.User.username == user.username)
+  )
+  existing_user = result.scalars().first() # gived first user object if matched or none
+
+  if existing_user:
+    raise HTTPException(
+      status_code=status.HTTP_400_BAD_REQUEST,
+      detail="Username already exists"
+    )
+
+  result = db.execute(
+    select(models.User).where(models.User.email == user.email)
+  )
+  existing_email = result.scalars().first() # gived first user object if matched or none
+
+  if existing_email:
+    raise HTTPException(
+      status_code=status.HTTP_400_BAD_REQUEST,
+      detail="Email already exists"
+    )
+
+  new_user = models.User(
+    username = user.username,
+    email = user.email
+  )
+
+  db.add(new_user)
+  db.commit()
+  db.refresh(new_user)
+  return new_user
+
+@app.get("/api/users/{user_id}", response_model=UserResponse)
+def get_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(
+    select(models.User).where(models.User.id == user_id)
+  )
+  user = result.scalars().first()
+
+  if user:
+    return user
+
+  raise HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="User not found"
+  )
+
+@app.get("api/users/{user_id}/posts", response_model=list[PostResponse])
+def get_user_posts(user_id: int, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(
+    select(models.User).where(models.User.id == user_id)
+  )
+  user = result.scalars().first()
+  if not user:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail="User not found."
+    )
+  
+  result = db.execute(
+    select(models.Post).where(models.Post.user_id == user.id)
+  )
+  posts = result.scalars().all()
+  return posts
+
+
 @app.get("/api/posts", response_model=list[PostResponse])
-def get_posts():
+def get_posts(db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(select(models.Post))
+  posts = result.scalars().all()
   return posts
 
 @app.get("/api/posts/{post_id}", response_model=PostResponse)
-def get_post(post_id: int):
-  for post in posts:
-    if post.get("id") == post_id:
-      return post
+def get_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(select(models.Post).where(models.Post.id == post_id))
+  post = result.scalars().first()
+  if post:
+    return post
   raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
 @app.post(
-    "/api/post",
+    "/api/posts",
     response_model=PostResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create_post(post: PostCreate):
-  new_id = max(p["id"] for p in posts) + 1 if posts else 1
-  new_post = {
-    "id": new_id,
-    "author": post.author,
-    "title": post.title,
-    "content": post.content,
-    "created_at": "October 02, 2026"
-  }
-  posts.append(new_post)
+def create_post(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
+  result = db.execute(select(models.User).where(models.User.id == post.user_id))
+  user = result.scalars().first()
+  if not user:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail="User not found"
+    )
+  
+  new_post = models.Post(
+    title = post.title,
+    author = post.author,
+    content = post.content
+  )
+  db.add(new_post)
+  db.commit()
+  db.refresh(new_post)
   return new_post
 
-# end API endpoints ---------------
+# -------- End API endpoints ---------------
 
 #--- Exception handling for both API nad html template -----------
 @app.exception_handler(StarletteHTTPException)
