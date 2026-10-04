@@ -1,12 +1,15 @@
 # Database Configuration file: This file handles the connection string and creates a session factory
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
+BASE_DIR = Path(__file__).resolve().parent
 
 # SQLite database file path
 # database url tells sqlalchemy where to connect.
 # ./ is current directory. blog.db is the file name (this file will created automatically)
 # Note: When we switch to PostgreSQL this connection string should be one and only chnages. Rest of the code will stay the same.
-SQLALCHEMY_DATABASE_URL = "sqlite:///./blog.db"
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{BASE_DIR/'blog.db'}"
 
 # Create engine that connection to the database
 # check_same_thread=False is required for SQLite to work smoothly with FastAPI's async loops.

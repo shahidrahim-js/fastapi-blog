@@ -10,8 +10,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import models
-from .database import Base, engine, get_db
-from .schemas import PostCreate, PostResponse, UserCreate, UserResponse
+from fastapi_blog.database import Base, engine, get_db
+from fastapi_blog.schemas import PostCreate, PostResponse, UserCreate, UserResponse
 
 # It looks at models that inherit from Base and Create database tables (if tabel not exist) when the app starts 
 Base.metadata.create_all(bind=engine)
@@ -183,8 +183,8 @@ def create_post(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
   
   new_post = models.Post(
     title = post.title,
-    author = post.author,
-    content = post.content
+    content = post.content,
+    user_id = post.user_id
   )
   db.add(new_post)
   db.commit()
