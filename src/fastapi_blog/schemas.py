@@ -25,6 +25,10 @@ class PostBase(BaseModel):
 class PostCreate(PostBase):
   user_id: int # TEMPORARY
 
+class PostUpdate(PostBase):
+  title: str | None = Field(default=None, min_length=1, max_length=100)
+  content: str | None =Field(default=None, min_length=1)
+
 # Post response schema. Inherits the fields and validation rule from PostBase.
 # from_attributes=True enable Pydantic to accsess object attributes using dot notation (for example: post.title).
 class PostResponse(PostBase):
