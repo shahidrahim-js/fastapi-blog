@@ -15,6 +15,11 @@ class UserResponse(UserBase):
   image_path: str
 
 
+class UserUpdate(UserBase):
+  username: str | None = Field(default=None, min_length=1, max_length=50)
+  email: EmailStr | None = Field(default=None, max_length=120)
+  image_file: str | None = Field(default=None, min_length=1, max_length=200)
+
 # Post Base schema containing the fields shared by Post create and response schemas.
 # Fields are a required field that is without a default value. 
 class PostBase(BaseModel):
