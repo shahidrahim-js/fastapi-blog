@@ -10,7 +10,7 @@ from fastapi_blog.database import get_db
 from fastapi_blog.schemas import PostResponse, UserCreate, UserResponse, UserUpdate
 
 # Create router instance
-router = APIRouter(prefix="/api/users")
+router = APIRouter()
 
 # In main.py we use the prefix "/api/users", while in routers/users.py we use
 # an empty string ("") for the route path.

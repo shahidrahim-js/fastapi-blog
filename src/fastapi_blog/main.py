@@ -16,9 +16,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import models
 from fastapi_blog.database import Base, engine, get_db
-from fastapi_blog.schemas import PostCreate, PostResponse, UserCreate, PostUpdate, UserResponse, UserUpdate
-
-from fastapi_blog.routers import users
+from fastapi_blog.routers import users, posts
 
 # It looks at models that inherit from Base and Create database tables (if tabel not exist) when the app starts 
 # Base.metadata.create_all(bind=engine)
@@ -47,9 +45,13 @@ app.mount("/static", StaticFiles(directory=BASE_DIR/"static"), name="static")
 
 app.mount("/media", StaticFiles(directory=BASE_DIR/"media"), name="media")
 
-app.include_router(users.router)
-
 templates = Jinja2Templates(directory=BASE_DIR/"templates")
+
+# include_router() accepts only one router at a time.
+# app.include_router(users.router, posts.router) ❌ This is incorrect.
+# So calling app.include_router() separately for each router.
+app.include_router(users.router, prefix="/api/users", tags=["Users"])
+app.include_router(posts.router, prefix="/api/posts", tags=["Posts"])
 
 # ----- Start HTML Template routes ------------------
 # include_in_schema=False exclude this page route from API docs (swagger)
@@ -108,123 +110,6 @@ async def user_posts_page(
   )
 
 # ------- End HTML Template routes ------------------------
-
-# -------- Start API endpoints ------------------
-
-@app.get("/api/posts", response_model=list[PostResponse])
-async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
-  result = await db.execute(
-    select(models.Post).options(selectinload(models.Post.author))
-  )
-  posts = result.scalars().all()
-  return posts
-
-@app.get("/api/posts/{post_id}", response_model=PostResponse)
-async def get_post(post_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-  result = await db.execute(
-    select(models.Post)
-    .options(selectinload(models.Post.author))
-    .where(models.Post.id == post_id)
-  )
-  post = result.scalars().first()
-  if post:
-    return post
-  raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-
-@app.put("/api/posts/{post_id}", response_model=PostResponse)
-async def update_post_full(
-  post_id: int,
-  post_data: PostCreate,
-  db: Annotated[AsyncSession, Depends(get_db)]
-):
-  result = await db.execute(
-    select(models.Post).where(models.Post.id == post_id)
-  )
-  post = result.scalars().first()
-  if not post:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Post not found"
-    )
-  if post_data.user_id != post.user_id:
-    result = await db.execute(select(models.User).where(models.User.id == post_data.user_id))
-    user = result.scalars().first()
-    if not user:
-      raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="User not found"
-      )
-  post.title = post_data.title
-  post.content = post_data.content
-  post.user_id = post_data.user_id
-
-  await db.commit()
-  await db.refresh(post, attribute_names=["author"])
-  return post
-
-@app.patch("/api/posts/{post_id}", response_model=PostResponse)
-async def update_post_partial(
-  post_id: int,
-  post_data: PostUpdate,
-  db: Annotated[AsyncSession, Depends(get_db)]
-):
-  result = await db.execute(
-    select(models.Post).where(models.Post.id == post_id)
-  )
-  post = result.scalars().first()
-  if not post:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Post not found"
-    )
-  
-  update_data = post_data.model_dump(exclude_unset=True)
-  for field, value in update_data.items():
-    setattr(post, field, value)
-
-  await db.commit()
-  await db.refresh(post, attribute_names=["author"])
-  return post
-
-@app.delete("/api/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(post_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-  result = await db.execute(
-    select(models.Post).where(models.Post.id == post_id)
-  )
-  post = result.scalars().first()
-  if not post:
-      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-
-  await db.delete(post)
-  await db.commit()
-
-@app.post(
-    "/api/posts",
-    response_model=PostResponse,
-    status_code=status.HTTP_201_CREATED
-)
-async def create_post(post: PostCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-  result = await db.execute(
-    select(models.User).where(models.User.id == post.user_id)
-  )
-  user = result.scalars().first()
-  if not user:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="User not found"
-    )
-  
-  new_post = models.Post(
-    title = post.title,
-    content = post.content,
-    user_id = post.user_id
-  )
-  db.add(new_post)
-  await db.commit()
-  await db.refresh(new_post, attribute_names=["author"]) # 'attribute_names' -> On create new post, it reurns author in response
-  return new_post
-
-# -------- End API endpoints ---------------
 
 #--- Exception handling for both API andd html template -----------
 @app.exception_handler(StarletteHTTPException)
