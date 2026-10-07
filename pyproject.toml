@@ -1,7 +1,7 @@
 [project]
 name = "fastapi-blog"
 version = "0.1.0"
-description = "FastAPI implementation"
+description = "FastAPI implementation with Jinja2 Templates"
 readme = "README.md"
 authors = [
     { name = "Shahid Rahim", email = "shahidrahim.js@gmail.com" }

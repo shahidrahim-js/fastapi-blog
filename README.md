@@ -52,7 +52,23 @@ You can use the documentation page to test the API.
 ├── src/
 │   └── fastapi_blog/
 │       ├── __init__.py
-│       └── main.py
+│       ├── main.py
+│       ├── database.py
+│       ├── models.py
+│       ├── schemas.py
+│       ├── routers/
+│       │   ├── __init__.py
+│       │   ├── posts.py
+│       │   └── users.py
+│       ├── static
+│       │   ├── css
+│       │   ├── js
+│       │   └── images
+│       └── templates 
+│           ├── layout.html
+│           ├── home.html
+│           ├── users.html
+│           └── user_posts.html
 ├── .gitignore
 ├── .python-version
 ├── pyproject.toml
@@ -65,6 +81,8 @@ The Project uses:
 * FastAPI
 * Uvicorn
 * uv for Python package and project management
+* aiosqlite
+* sqlalchemy
 
 ## Development
 After changing the code, restart the development server if needed.
