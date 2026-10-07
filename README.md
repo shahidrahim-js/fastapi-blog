@@ -60,11 +60,11 @@ You can use the documentation page to test the API.
 │       │   ├── __init__.py
 │       │   ├── posts.py
 │       │   └── users.py
-│       ├── static
-│       │   ├── css
-│       │   ├── js
-│       │   └── images
-│       └── templates 
+│       ├── static/
+│       │   ├── css/
+│       │   ├── js/
+│       │   └── images/
+│       └── templates/ 
 │           ├── layout.html
 │           ├── home.html
 │           ├── users.html
