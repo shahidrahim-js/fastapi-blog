@@ -1,10 +1,10 @@
 [project]
 name = "fastapi-blog"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI implementation"
 readme = "README.md"
 authors = [
-    { name = "Shahid Rahim", email = "shahidpiet7@gmail.com" }
+    { name = "Shahid Rahim", email = "shahidrahim.js@gmail.com" }
 ]
 requires-python = ">=3.14"
 dependencies = [

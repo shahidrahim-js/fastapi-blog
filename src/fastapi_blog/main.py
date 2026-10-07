@@ -18,6 +18,8 @@ from . import models
 from fastapi_blog.database import Base, engine, get_db
 from fastapi_blog.schemas import PostCreate, PostResponse, UserCreate, PostUpdate, UserResponse, UserUpdate
 
+from fastapi_blog.routers import users
+
 # It looks at models that inherit from Base and Create database tables (if tabel not exist) when the app starts 
 # Base.metadata.create_all(bind=engine)
 
@@ -44,6 +46,8 @@ app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=BASE_DIR/"static"), name="static")
 
 app.mount("/media", StaticFiles(directory=BASE_DIR/"media"), name="media")
+
+app.include_router(users.router)
 
 templates = Jinja2Templates(directory=BASE_DIR/"templates")
 
@@ -106,46 +110,6 @@ async def user_posts_page(
 # ------- End HTML Template routes ------------------------
 
 # -------- Start API endpoints ------------------
-@app.post(
-    "/api/users",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED
-)
-# get_db is a dependency injection
-# This tells FastAPI before runing this function call get_db (defined in detabase.py) and pass the result as db parameter
-async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-  result = await db.execute(
-    select(models.User).where(models.User.username == user.username)
-  )
-  existing_user = result.scalars().first() # gived first user object if matched or none
-
-  if existing_user:
-    raise HTTPException(
-      status_code=status.HTTP_400_BAD_REQUEST,
-      detail="Username already exists"
-    )
-
-  result = await db.execute(
-    select(models.User).where(models.User.email == user.email)
-  )
-  existing_email = result.scalars().first() # gived first user object if matched or none
-
-  if existing_email:
-    raise HTTPException(
-      status_code=status.HTTP_400_BAD_REQUEST,
-      detail="Email already exists"
-    )
-
-  new_user = models.User(
-    username = user.username,
-    email = user.email
-  )
-
-  db.add(new_user)
-  await db.commit()
-  await db.refresh(new_user)
-  return new_user
-
 @app.get("/api/users/{user_id}", response_model=UserResponse)
 async def get_user(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
   result = await db.execute(
