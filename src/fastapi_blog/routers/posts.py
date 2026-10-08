@@ -15,7 +15,9 @@ router = APIRouter()
 @router.get("", response_model=list[PostResponse])
 async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
   result = await db.execute(
-    select(models.Post).options(selectinload(models.Post.author))
+    select(models.Post)
+    .options(selectinload(models.Post.author))
+    .order_by(models.Post.created_at.desc())
   )
   posts = result.scalars().all()
   return posts

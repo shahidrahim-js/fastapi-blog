@@ -59,7 +59,11 @@ app.include_router(posts.router, prefix="/api/posts", tags=["Posts"])
 @app.get("/posts", include_in_schema=False, name="posts")
 # The dictionary MUST include "request": Request as FastAPI required it.
 async def home(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
-  result = await db.execute(select(models.Post).options(selectinload(models.Post.author))) #Egerly loading author of the Post
+  result = await db.execute(
+    select(models.Post)
+    .options(selectinload(models.Post.author)) #Egerly loading author of the Post
+    .order_by(models.Post.created_at.desc())
+    )
   posts = result.scalars().all()
   return templates.TemplateResponse(
     request,
@@ -101,6 +105,7 @@ async def user_posts_page(
     select(models.Post)
     .options(selectinload(models.Post.author))
     .where(models.Post.user_id == user.id)
+    .order_by(models.Post.created_at.desc())
   )
   posts = result.scalars().all()
   return templates.TemplateResponse(
