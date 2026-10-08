@@ -293,3 +293,10 @@ a.article-title:focus {
 .modal-header.bg-danger .modal-title {
   color: #ffffff !important;
 }
+
+/* Custom CSS */
+.required-field::after {
+  content: " *";
+  color: #dc3545; /* Bootstrap 5 danger red hex code */
+  font-weight: bold;
+}
