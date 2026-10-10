@@ -8,7 +8,7 @@ from fastapi_blog.config import settings
 
 password_hash = PasswordHash.recommended()
 
-oauth_scheme = OAuth2PasswordBearer(tokenUrl="api/users/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/token")
 
 # Password hashing function
 # This takes a plain password and returns a hashed password.
@@ -18,7 +18,7 @@ def hash_password(password: str) -> str:
 # Verify password function
 # It takes plain password and hashed password, it returns true if they match else returns false
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-  return   password_hash.verify(plain_password, hash_password)
+  return   password_hash.verify(plain_password, hashed_password)
 
 # Create access token function, that returns a JWT token.
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
@@ -48,7 +48,7 @@ def verify_access_token(token: str) -> str | None:
       algorithms=[settings.algorithm],
       options={"require": ["exp", "sub"]}
     )
-  except jwt.InvalidAlgorithmError:
+  except jwt.InvalidTokenError:
     return None
   else:
     return payload.get("sub") # Stored the user id in sub field when we create the token and extracting from there

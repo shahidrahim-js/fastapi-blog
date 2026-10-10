@@ -12,7 +12,7 @@ class UserPublic(BaseModel):
   model_config = ConfigDict(from_attributes=True)
 
   id: int
-  usename: str
+  username: str
   image_file: str | None
   image_path: str
 
