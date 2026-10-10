@@ -34,13 +34,13 @@
 
     <!-- Custom Font -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
-          rel="stylesheet">
+      rel="stylesheet">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-          crossorigin="anonymous">
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous">
 
     <!-- Stylesheet -->
     <link rel="stylesheet" type="text/css" href="{{ url_for("static", path="css/main.css") }}">
@@ -63,16 +63,16 @@
   <body class="d-flex flex-column min-vh-100">
     <header class="site-header">
       <nav class="navbar navbar-expand-md bg-steel fixed-top"
-           data-bs-theme="dark">
+          data-bs-theme="dark">
         <div class="container">
           <a class="navbar-brand me-4" href="{{ url_for("home") }}">FastAPI Blog</a>
           <button class="navbar-toggler"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#navbarToggle"
-                  aria-controls="navbarToggle"
-                  aria-expanded="false"
-                  aria-label="Toggle navigation">
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarToggle"
+            aria-controls="navbarToggle"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
@@ -92,8 +92,8 @@
                 data-bs-target="#createPostModal">
                 New Post
               </button>
-              <a class="btn btn-outline-light mb-2 mb-md-0 me-md-2" href="#">Login</a>
-              <a class="btn btn-light mb-2 mb-md-0 me-md-3" href="#">Register</a>
+              <a class="btn btn-outline-light mb-2 mb-md-0 me-md-2" href="{{ url_for("login_page") }}">Login</a>
+              <a class="btn btn-light mb-2 mb-md-0 me-md-3" href="{{ url_for("register_page") }}">Register</a>
               <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle"
                    href="#"
