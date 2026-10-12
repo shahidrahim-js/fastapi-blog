@@ -36,7 +36,7 @@ class PostBase(BaseModel):
 
 # Post create schema, that inherits the fields and validation rule from PostBase.
 class PostCreate(PostBase):
-  user_id: int # TEMPORARY
+  pass
 
 class PostUpdate(BaseModel):
   title: str | None = Field(default=None, min_length=1, max_length=100)
