@@ -8,7 +8,7 @@ from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import models
+from fastapi_blog import models
 from fastapi_blog.config import settings
 from fastapi_blog.database import get_db
 
