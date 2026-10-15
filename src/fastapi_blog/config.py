@@ -15,5 +15,7 @@ class Settings(BaseSettings):
   algorithm: str = "HS256" # Standard for JSON web token
   access_token_expire_minutes: int = 30
 
+  max_upload_size_bytes: int = 5 * 1024 * 1024
+
 # Setting instance - Loaded from .env file
 settings = Settings() # type: ignore[call-arg]
