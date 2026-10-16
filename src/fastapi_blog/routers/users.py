@@ -37,7 +37,9 @@ router = APIRouter()
     response_model=UserPrivate,
     status_code=status.HTTP_201_CREATED
 )
-# get_db is a dependency that uses FastAPI's dependency injection system.
+
+# Depends(get_db) tells FastAPI to obtain the database session through get_db() and provide it as db.
+# or we can say get_db is a dependency that uses FastAPI's dependency injection system.
 # Before running this function, FastAPI calls get_db (defined in database.py)
 # and passes the returned database session to the db parameter.
 async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
@@ -69,8 +71,12 @@ async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_
     password_hash = hash_password(user.password)
   )
 
+  # Adds a new_user to the session so that SQLAlchemy can track it for persistence in the database.
   db.add(new_user)
+  # Commits the transaction. Once the commit succeeds, the changes are permanently saved to the database.
+  # SQLAlchemy also flushes any pending SQL statements to the database when necessary, before completing the commit.
   await db.commit()
+  # Refreshes the object's attributes by reloading them from the database.
   await db.refresh(new_user)
   return new_user
 

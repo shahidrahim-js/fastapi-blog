@@ -6,8 +6,8 @@ from sqlalchemy.orm import DeclarativeBase
 BASE_DIR = Path(__file__).resolve().parent
 
 # SQLite database file path
-# database url tells sqlalchemy where to connect.
-# ./ is current directory. blog.db is the file name (this file will created automatically)
+# database url tells SQLAlchemy where to connect.
+# blog.db is the file name (this file will created automatically)
 # Note: When we switch to PostgreSQL this connection string should be one and only chnages. Rest of the code will stay the same.
 SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///{BASE_DIR/'blog.db'}"
 
@@ -18,7 +18,7 @@ engine = create_async_engine(
   connect_args={"check_same_thread": False}
 )
 
-# Create a Session factory for handling requests
+# Create a Session factory for handling requests for read and write into database.
 # This is standard FastAPI pattern.
 AsyncSessionLocal = async_sessionmaker(
   engine,
@@ -30,7 +30,7 @@ AsyncSessionLocal = async_sessionmaker(
 class Base(DeclarativeBase):
   pass
 
-# Dependency to inject the database session into api route functions (in main.py)
+# Dependency to inject the database session into api route functions (eg: users.py)
 async def get_db():
   async with AsyncSessionLocal() as session:
     yield session

@@ -25,7 +25,7 @@ def hash_password(password: str) -> str:
 # Verify password function
 # It takes plain password and hashed password, it returns true if they match else returns false
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-  return   password_hash.verify(plain_password, hashed_password)
+  return password_hash.verify(plain_password, hashed_password)
 
 # Create access token function, that returns a JWT token.
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
